@@ -1,9 +1,10 @@
-package com.ctdl.btl;
-
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
+/**
+ * Hóa đơn bán hàng ghi lại giao dịch giữa cửa hàng và khách.
+ */
 public class Invoice {
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ISO_LOCAL_DATE;
 
@@ -17,6 +18,17 @@ public class Invoice {
     private final LocalDate saleDate;
     private final String salesperson;
 
+    /**
+     * @param id            mã hóa đơn.
+     * @param customerName  tên khách hàng.
+     * @param customerPhone số điện thoại khách.
+     * @param phoneId       mã điện thoại bán ra.
+     * @param quantity      số lượng mua.
+     * @param unitPrice     đơn giá tại thời điểm bán.
+     * @param discountRate  tỷ lệ chiết khấu (0-1).
+     * @param saleDate      ngày bán.
+     * @param salesperson   nhân viên phụ trách.
+     */
     public Invoice(
             String id,
             String customerName,
@@ -38,50 +50,74 @@ public class Invoice {
         this.salesperson = salesperson;
     }
 
+    /** @return mã hóa đơn. */
     public String getId() {
         return id;
     }
 
+    /** @return tên khách hàng. */
     public String getCustomerName() {
         return customerName;
     }
 
+    /** @return số điện thoại khách hàng. */
     public String getCustomerPhone() {
         return customerPhone;
     }
 
+    /** @return mã điện thoại mua. */
     public String getPhoneId() {
         return phoneId;
     }
 
+    /** @return số lượng mua. */
     public int getQuantity() {
         return quantity;
     }
 
+    /** @return đơn giá VND. */
     public double getUnitPrice() {
         return unitPrice;
     }
 
+    /** @return tỷ lệ chiết khấu (0-1). */
     public double getDiscountRate() {
         return discountRate;
     }
 
+    /** @return ngày bán. */
     public LocalDate getSaleDate() {
         return saleDate;
     }
 
+    /** @return tên nhân viên phụ trách. */
     public String getSalesperson() {
         return salesperson;
     }
 
+    /**
+     * Thành tiền trước khi trừ chiết khấu.
+     *
+     * @return số tiền = đơn giá * số lượng.
+     */
     public double getGrossTotal() {
         return unitPrice * quantity;
     }
 
+    /**
+     * Thành tiền sau khi áp dụng chiết khấu.
+     *
+     * @return số tiền khách phải trả.
+     */
     public double getNetTotal() {
         return getGrossTotal() * (1 - discountRate);
     }
 
+    /**
+     * Xuất hóa đơn thành dòng CSV.
+     *
+     * @return chuỗi CSV gồm 9 trường.
+     */
     public String toCsv() {
         return String.join(",",
                 id,
@@ -95,6 +131,12 @@ public class Invoice {
                 salesperson);
     }
 
+    /**
+     * Đọc một dòng CSV và chuyển về đối tượng Invoice.
+     *
+     * @param line dòng CSV cần parse.
+     * @return hóa đơn tương ứng.
+     */
     public static Invoice fromCsv(String line) {
         String[] parts = line.split(",");
         if (parts.length < 9) {

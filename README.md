@@ -5,7 +5,7 @@ Chương trình Java dạng console quản lý bán điện thoại di động, 
 ## 1. Cấu trúc dự án
 
 ```
-src/com/ctdl/btl/
+src/
  ├─ Main.java                // Điểm vào chương trình
  ├─ ConsoleApp.java          // Xử lý menu và luồng nghiệp vụ
  ├─ Phone.java               // Đối tượng Điện thoại
@@ -40,7 +40,8 @@ data/
 ```bash
 cd path/to/your/project
 javac -cp src -d out $(find src -name "*.java")
-java -cp out com.ctdl.btl.Main
+java -cp out Main
+```
 
 > **Gợi ý**: có thể tạo script build nhỏ hoặc dùng IntelliJ/VS Code để chạy trực tiếp.
 

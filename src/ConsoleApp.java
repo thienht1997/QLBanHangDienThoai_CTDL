@@ -1,5 +1,3 @@
-package com.ctdl.btl;
-
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.LocalDate;
@@ -8,6 +6,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
 
+/**
+ * Lớp chịu trách nhiệm hiển thị menu console và điều hướng đến các chức năng.
+ */
 public class ConsoleApp {
     private final Scanner scanner = new Scanner(System.in);
     private final PhoneManager phoneManager = new PhoneManager();
@@ -17,6 +18,9 @@ public class ConsoleApp {
     private final Path phoneFile = Path.of("data", "phones.csv");
     private final Path invoiceFile = Path.of("data", "invoices.csv");
 
+    /**
+     * Hàm khởi động chính: đọc dữ liệu, seed nếu trống và mở menu.
+     */
     public void run() {
         loadFromFiles();
         if (phoneManager.getAll().isEmpty()) {
@@ -28,6 +32,9 @@ public class ConsoleApp {
         mainMenuLoop();
     }
 
+    /**
+     * Đọc dữ liệu từ file CSV (nếu có).
+     */
     private void loadFromFiles() {
         try {
             phoneManager.replaceAll(fileService.readPhones(phoneFile));
@@ -37,6 +44,9 @@ public class ConsoleApp {
         }
     }
 
+    /**
+     * Ghi dữ liệu hiện tại xuống file CSV.
+     */
     private void saveToFiles() {
         try {
             fileService.writePhones(phoneFile, phoneManager.getAll());
@@ -47,6 +57,9 @@ public class ConsoleApp {
         }
     }
 
+    /**
+     * Vòng lặp menu chính.
+     */
     private void mainMenuLoop() {
         while (true) {
             System.out.println("\n===== QUAN LY BAN DIEN THOAI =====");
@@ -77,6 +90,11 @@ public class ConsoleApp {
         }
     }
 
+    /**
+     * Menu con dành cho quản lý điện thoại.
+     * Hiển thị các lựa chọn CRUD, tìm kiếm, sắp xếp và thống kê điện thoại.
+     * Kết thúc khi người dùng chọn 0.
+     */
     private void phoneMenu() {
         while (true) {
             System.out.println("\n--- Quan ly Dien Thoai ---");
@@ -122,6 +140,11 @@ public class ConsoleApp {
         }
     }
 
+    /**
+     * Menu con dành cho quản lý hóa đơn.
+     * Bao gồm toàn bộ thao tác CRUD, tìm kiếm nhiều tiêu chí và thống kê cơ bản.
+     * Kết thúc khi người dùng chọn 0.
+     */
     private void invoiceMenu() {
         while (true) {
             System.out.println("\n--- Quan ly Hoa Don ---");
@@ -172,6 +195,10 @@ public class ConsoleApp {
         }
     }
 
+    /**
+     * Menu báo cáo thống kê nâng cao.
+     * Cho phép lọc/nhóm các chỉ số doanh thu theo từng điều kiện.
+     */
     private void reportMenu() {
         while (true) {
             System.out.println("\n--- Bao cao & Thong ke ---");
@@ -218,6 +245,10 @@ public class ConsoleApp {
         }
     }
 
+    /**
+     * Tự động chạy qua tất cả chức năng để trình diễn bài toán.
+     * Dùng để minh chứng yêu cầu đề tài mà không cần thao tác thủ công.
+     */
     private void autoDemo() {
         System.out.println("\n--- Bat dau demo tu dong ---");
         System.out.println("1) In danh sach dien thoai va hoa don");
@@ -255,6 +286,10 @@ public class ConsoleApp {
         printLongMap("Dien thoai ton kho >= 10", analyticsService.phonesByBrandWithStockGreaterThan(10));
     }
 
+    /**
+     * In ra các điện thoại có giá/ tồn kho lớn nhất - nhỏ nhất.
+     * Không trả về giá trị, chỉ hiển thị kết quả ra console.
+     */
     private void showPhoneExtremes() {
         Optional<Phone> maxPrice = phoneManager.findMostExpensive();
         Optional<Phone> minPrice = phoneManager.findCheapest();
@@ -266,6 +301,10 @@ public class ConsoleApp {
         minStock.ifPresent(phone -> System.out.println("Ton kho it nhat: " + phone));
     }
 
+    /**
+     * In ra hóa đơn có giá trị hoặc số lượng lớn/nhỏ nhất.
+     * Không trả về giá trị, dùng cho mục minh hoạ trong menu.
+     */
     private void showInvoiceExtremes() {
         invoiceManager.findLargestOrder().ifPresent(invoice -> System.out.println("Don gia tri lon nhat: " + invoice));
         invoiceManager.findSmallestOrder().ifPresent(invoice -> System.out.println("Don gia tri nho nhat: " + invoice));
@@ -273,6 +312,10 @@ public class ConsoleApp {
         invoiceManager.findLowestQuantity().ifPresent(invoice -> System.out.println("So luong nho nhat: " + invoice));
     }
 
+    /**
+     * Các thống kê tổng hợp đối với điện thoại.
+     * Bao gồm tổng giá trị tồn, giá trung bình và phân bổ theo thương hiệu.
+     */
     private void showPhoneAggregations() {
         System.out.printf("Tong gia tri ton kho: %.0f%n", phoneManager.totalInventoryValue());
         System.out.printf("Gia trung binh: %.0f%n", phoneManager.averagePrice());
@@ -281,6 +324,10 @@ public class ConsoleApp {
         System.out.println("Thong ke theo thuong hieu: " + phoneManager.countPhonesPerBrand());
     }
 
+    /**
+     * Các thống kê tổng hợp đối với hóa đơn.
+     * Bao gồm tổng doanh thu, trung bình, số lượng bán và tổng chiết khấu.
+     */
     private void showInvoiceAggregations() {
         System.out.printf("Tong doanh thu: %.0f%n", invoiceManager.totalRevenue());
         System.out.printf("Gia tri trung binh: %.0f%n", invoiceManager.averageInvoiceValue());
@@ -289,6 +336,11 @@ public class ConsoleApp {
         System.out.printf("Tong tien giam gia: %.0f%n", invoiceManager.totalDiscountAmount());
     }
 
+    /**
+     * Thu thập thông tin điện thoại từ người dùng.
+     *
+     * @return đối tượng Phone mới được nhập.
+     */
     private Phone inputPhone() {
         String id = readLine("Ma: ");
         String model = readLine("Model: ");
@@ -300,6 +352,11 @@ public class ConsoleApp {
         return new Phone(id, model, brand, storage, price, stock, year);
     }
 
+    /**
+     * Cập nhật thông tin một điện thoại.
+     * Đầu vào lấy trực tiếp từ người dùng (mã cần cập nhật và dữ liệu mới).
+     * Nếu mã mới khác mã cũ sẽ bị từ chối để tránh thay đổi khóa chính.
+     */
     private void updatePhone() {
         String id = readLine("Nhap ma can cap nhat: ");
         Optional<Phone> existing = phoneManager.findById(id);
@@ -317,6 +374,10 @@ public class ConsoleApp {
         System.out.println("Da cap nhat.");
     }
 
+    /**
+     * Xoá điện thoại theo mã.
+     * Xác nhận trạng thái xoá cho người dùng.
+     */
     private void deletePhone() {
         String id = readLine("Nhap ma can xoa: ");
         if (phoneManager.deletePhone(id)) {
@@ -326,6 +387,11 @@ public class ConsoleApp {
         }
     }
 
+    /**
+     * Nhập thông tin hóa đơn từ người dùng.
+     *
+     * @return hóa đơn mới.
+     */
     private Invoice inputInvoice() {
         String id = readLine("Ma hoa don: ");
         String customer = readLine("Khach hang: ");
@@ -339,6 +405,10 @@ public class ConsoleApp {
         return new Invoice(id, customer, phoneNumber, phoneId, quantity, unitPrice, discount, date, salesperson);
     }
 
+    /**
+     * Cập nhật một hóa đơn.
+     * Quy trình tương tự cập nhật điện thoại nhưng áp dụng cho Invoice.
+     */
     private void updateInvoice() {
         String id = readLine("Nhap ma hoa don: ");
         Optional<Invoice> existing = invoiceManager.findById(id);
@@ -356,6 +426,10 @@ public class ConsoleApp {
         System.out.println("Da cap nhat.");
     }
 
+    /**
+     * Xoá hóa đơn theo mã.
+     * Thông báo kết quả sau khi thao tác.
+     */
     private void deleteInvoice() {
         String id = readLine("Nhap ma hoa don: ");
         if (invoiceManager.deleteInvoice(id)) {
@@ -365,6 +439,11 @@ public class ConsoleApp {
         }
     }
 
+    /**
+     * In bảng danh sách điện thoại ra màn hình.
+     *
+     * @param phones danh sách cần in.
+     */
     private void printPhones(List<Phone> phones) {
         if (phones.isEmpty()) {
             System.out.println("(Khong co du lieu)");
@@ -378,6 +457,11 @@ public class ConsoleApp {
         }
     }
 
+    /**
+     * In bảng danh sách hóa đơn ra màn hình.
+     *
+     * @param invoices danh sách cần in.
+     */
     private void printInvoices(List<Invoice> invoices) {
         if (invoices.isEmpty()) {
             System.out.println("(Khong co du lieu)");
@@ -392,26 +476,56 @@ public class ConsoleApp {
         }
     }
 
+    /**
+     * In các thống kê dạng Map với giá trị double.
+     *
+     * @param title tiêu đề hiển thị.
+     * @param map   dữ liệu cần in.
+     */
     private void printDoubleMap(String title, Map<?, Double> map) {
         System.out.println(title + ":");
         map.forEach((key, value) -> System.out.printf(" - %s: %.0f%n", key, value));
     }
 
+    /**
+     * In thống kê dạng Map với giá trị int.
+     *
+     * @param title tiêu đề hiển thị.
+     * @param map   dữ liệu cần in.
+     */
     private void printIntMap(String title, Map<?, Integer> map) {
         System.out.println(title + ":");
         map.forEach((key, value) -> System.out.printf(" - %s: %d%n", key, value));
     }
 
+    /**
+     * In thống kê dạng Map với giá trị long.
+     *
+     * @param title tiêu đề hiển thị.
+     * @param map   dữ liệu cần in.
+     */
     private void printLongMap(String title, Map<?, Long> map) {
         System.out.println(title + ":");
         map.forEach((key, value) -> System.out.printf(" - %s: %d%n", key, value));
     }
 
+    /**
+     * Đọc chuỗi và cắt khoảng trắng dư.
+     *
+     * @param prompt thông điệp hiển thị cho người dùng.
+     * @return chuỗi đã nhập.
+     */
     private String readLine(String prompt) {
         System.out.print(prompt);
         return scanner.nextLine().trim();
     }
 
+    /**
+     * Đọc số nguyên kèm kiểm tra lỗi.
+     *
+     * @param prompt thông điệp yêu cầu nhập.
+     * @return số nguyên hợp lệ.
+     */
     private int readInt(String prompt) {
         while (true) {
             try {
@@ -422,6 +536,12 @@ public class ConsoleApp {
         }
     }
 
+    /**
+     * Đọc số thực kèm kiểm tra lỗi.
+     *
+     * @param prompt thông điệp yêu cầu nhập.
+     * @return số thực hợp lệ.
+     */
     private double readDouble(String prompt) {
         while (true) {
             try {
@@ -432,6 +552,12 @@ public class ConsoleApp {
         }
     }
 
+    /**
+     * Đọc ngày theo định dạng yyyy-MM-dd.
+     *
+     * @param prompt thông điệp yêu cầu nhập.
+     * @return đối tượng LocalDate hợp lệ.
+     */
     private LocalDate readDate(String prompt) {
         while (true) {
             try {
@@ -442,6 +568,10 @@ public class ConsoleApp {
         }
     }
 
+    /**
+     * Sinh dữ liệu mẫu cho danh sách điện thoại.
+     * Chỉ chạy khi chưa có dữ liệu nào trong hệ thống.
+     */
     private void seedPhones() {
         phoneManager.addPhone(new Phone("P001", "iPhone 15 Pro", "Apple", 256, 33990000, 15, 2023));
         phoneManager.addPhone(new Phone("P002", "Galaxy S24 Ultra", "Samsung", 256, 31990000, 12, 2024));
@@ -450,6 +580,10 @@ public class ConsoleApp {
         phoneManager.addPhone(new Phone("P005", "Vivo V30", "Vivo", 256, 13990000, 18, 2024));
     }
 
+    /**
+     * Sinh dữ liệu mẫu cho danh sách hóa đơn.
+     * Gắn kết với các điện thoại mẫu để tiện thử nghiệm.
+     */
     private void seedInvoices() {
         invoiceManager.addInvoice(new Invoice("INV001", "Nguyen Van A", "0909000001", "P001", 1, 34990000, 0.05,
                 LocalDate.of(2024, 3, 12), "Tran Thi B"));

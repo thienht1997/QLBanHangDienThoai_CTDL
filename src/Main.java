@@ -1,5 +1,3 @@
-package com.ctdl.btl;
-
 /**
  * Điểm vào chương trình: tạo ConsoleApp và chạy.
  */

@@ -1,5 +1,3 @@
-package com.ctdl.btl;
-
 import java.util.Objects;
 
 /**
