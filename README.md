@@ -38,10 +38,9 @@ data/
 ## 3. Hướng dẫn chạy
 
 ```bash
-cd /Users/thienho/Documents/Project/QLBanHangDienThoai_CTDL
+cd path/to/your/project
 javac -cp src -d out $(find src -name "*.java")
 java -cp out com.ctdl.btl.Main
-```
 
 > **Gợi ý**: có thể tạo script build nhỏ hoặc dùng IntelliJ/VS Code để chạy trực tiếp.
 
