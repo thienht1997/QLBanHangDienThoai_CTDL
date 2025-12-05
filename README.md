@@ -43,13 +43,7 @@ javac -cp src -d out $(find src -name "*.java")
 java -cp out Main
 ```
 
-> **Gợi ý**: có thể tạo script build nhỏ hoặc dùng IntelliJ/VS Code để chạy trực tiếp.
-
-## 4. Báo cáo tham khảo
-
-Sử dụng README này làm khung, bổ sung thêm các mục yêu cầu (bìa, giới thiệu đề tài, mô tả cấu trúc & thuật toán, mô tả chức năng, kết quả chạy, kết luận, tài liệu tham khảo) khi nộp báo cáo chính thức.
-
-## 5. Ghi chú
+## 4. Ghi chú
 
 - Khi chạy lần đầu nếu không có file CSV, chương trình tự sinh dữ liệu mẫu.
 - Có thể chỉnh sửa dữ liệu trong `data/*.csv` để khởi tạo nhanh.
