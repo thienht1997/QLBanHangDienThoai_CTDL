@@ -3,7 +3,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Tổng hợp các báo cáo/ thống kê nâng cao dựa trên dữ liệu điện thoại và hóa đơn.
@@ -24,10 +23,13 @@ public class AnalyticsService {
      */
     public Map<String, Double> revenueByBrand() {
         Map<String, Phone> phoneIndex = buildPhoneIndex();
-        return invoiceManager.getAll().stream()
-                .collect(Collectors.groupingBy(
-                        invoice -> phoneIndex.getOrDefault(invoice.getPhoneId(), dummyPhone()).getBrand(),
-                        Collectors.summingDouble(Invoice::getNetTotal)));
+        Map<String, Double> result = new HashMap<>();
+        for (Invoice invoice : invoiceManager.getAll()) {
+            Phone phone = phoneIndex.getOrDefault(invoice.getPhoneId(), dummyPhone());
+            String brand = phone.getBrand();
+            result.merge(brand, invoice.getNetTotal(), Double::sum);
+        }
+        return result;
     }
 
     /**
@@ -38,7 +40,8 @@ public class AnalyticsService {
     public Map<String, Integer> quantitySoldByBrand() {
         Map<String, Phone> phoneIndex = buildPhoneIndex();
         Map<String, Integer> result = new HashMap<>();
-        for (Invoice invoice : invoiceManager.getAll()) {
+        List<Invoice> invoices = invoiceManager.getAll();
+        for (Invoice invoice : invoices) {
             String brand = phoneIndex.getOrDefault(invoice.getPhoneId(), dummyPhone()).getBrand();
             result.merge(brand, invoice.getQuantity(), Integer::sum);
         }
@@ -52,10 +55,15 @@ public class AnalyticsService {
      * @return Map tháng -> doanh thu trong năm đó.
      */
     public Map<Integer, Double> revenueByMonth(int year) {
-        return invoiceManager.getAll().stream()
-                .filter(invoice -> invoice.getSaleDate().getYear() == year)
-                .collect(Collectors.groupingBy(invoice -> invoice.getSaleDate().getMonthValue(),
-                        Collectors.summingDouble(Invoice::getNetTotal)));
+        Map<Integer, Double> result = new HashMap<>();
+        for (Invoice invoice : invoiceManager.getAll()) {
+            if (invoice.getSaleDate().getYear() != year) {
+                continue;
+            }
+            int month = invoice.getSaleDate().getMonthValue();
+            result.merge(month, invoice.getNetTotal(), Double::sum);
+        }
+        return result;
     }
 
     /**
@@ -65,9 +73,13 @@ public class AnalyticsService {
      * @return Map nhân viên -> số hóa đơn đạt yêu cầu.
      */
     public Map<String, Long> invoicesBySalespersonWithMinRevenue(double minRevenue) {
-        return invoiceManager.getAll().stream()
-                .filter(invoice -> invoice.getNetTotal() >= minRevenue)
-                .collect(Collectors.groupingBy(Invoice::getSalesperson, Collectors.counting()));
+        Map<String, Long> summary = new HashMap<>();
+        for (Invoice invoice : invoiceManager.getAll()) {
+            if (invoice.getNetTotal() >= minRevenue) {
+                summary.merge(invoice.getSalesperson(), 1L, Long::sum);
+            }
+        }
+        return summary;
     }
 
     /**
@@ -77,9 +89,13 @@ public class AnalyticsService {
      * @return Map thương hiệu -> số mẫu đạt điều kiện.
      */
     public Map<String, Long> phonesByBrandWithStockGreaterThan(int minStock) {
-        return phoneManager.getAll().stream()
-                .filter(phone -> phone.getStock() >= minStock)
-                .collect(Collectors.groupingBy(Phone::getBrand, Collectors.counting()));
+        Map<String, Long> summary = new HashMap<>();
+        for (Phone phone : phoneManager.getAll()) {
+            if (phone.getStock() >= minStock) {
+                summary.merge(phone.getBrand(), 1L, Long::sum);
+            }
+        }
+        return summary;
     }
 
     /**
@@ -89,9 +105,13 @@ public class AnalyticsService {
      * @return Map thương hiệu -> số mẫu đạt điều kiện.
      */
     public Map<String, Long> phonesByBrandWithPriceGreaterThan(double price) {
-        return phoneManager.getAll().stream()
-                .filter(phone -> phone.getPrice() >= price)
-                .collect(Collectors.groupingBy(Phone::getBrand, Collectors.counting()));
+        Map<String, Long> summary = new HashMap<>();
+        for (Phone phone : phoneManager.getAll()) {
+            if (phone.getPrice() >= price) {
+                summary.merge(phone.getBrand(), 1L, Long::sum);
+            }
+        }
+        return summary;
     }
 
     /**
@@ -100,9 +120,19 @@ public class AnalyticsService {
      * @return Map nhân viên -> tỷ lệ chiết khấu trung bình.
      */
     public Map<String, Double> averageDiscountBySalesperson() {
-        return invoiceManager.getAll().stream()
-                .collect(Collectors.groupingBy(Invoice::getSalesperson,
-                        Collectors.averagingDouble(Invoice::getDiscountRate)));
+        Map<String, double[]> aggregates = new HashMap<>();
+        for (Invoice invoice : invoiceManager.getAll()) {
+            double[] stats = aggregates.computeIfAbsent(invoice.getSalesperson(), key -> new double[2]);
+            stats[0] += invoice.getDiscountRate();
+            stats[1] += 1;
+        }
+        Map<String, Double> averages = new HashMap<>();
+        for (Map.Entry<String, double[]> entry : aggregates.entrySet()) {
+            double[] stats = entry.getValue();
+            double average = stats[1] == 0 ? 0 : stats[0] / stats[1];
+            averages.put(entry.getKey(), average);
+        }
+        return averages;
     }
 
     /**
@@ -113,9 +143,13 @@ public class AnalyticsService {
      */
     public long countInvoicesByCustomerKeyword(String keyword) {
         String normalized = keyword.toLowerCase(Locale.ROOT);
-        return invoiceManager.getAll().stream()
-                .filter(invoice -> invoice.getCustomerName().toLowerCase(Locale.ROOT).contains(normalized))
-                .count();
+        long count = 0;
+        for (Invoice invoice : invoiceManager.getAll()) {
+            if (invoice.getCustomerName().toLowerCase(Locale.ROOT).contains(normalized)) {
+                count++;
+            }
+        }
+        return count;
     }
 
     /**
@@ -124,8 +158,11 @@ public class AnalyticsService {
      * @return Map mã -> đối tượng phone.
      */
     private Map<String, Phone> buildPhoneIndex() {
-        return phoneManager.getAll().stream()
-                .collect(Collectors.toMap(Phone::getId, phone -> phone, (a, b) -> a));
+        Map<String, Phone> index = new HashMap<>();
+        for (Phone phone : phoneManager.getAll()) {
+            index.putIfAbsent(phone.getId(), phone);
+        }
+        return index;
     }
 
     /**

@@ -1,9 +1,10 @@
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Lớp quản lý danh sách điện thoại: CRUD, tìm kiếm, sắp xếp và thống kê.
@@ -59,9 +60,13 @@ public class PhoneManager {
      */
     public List<Phone> findByBrand(String brand) {
         String normalized = brand.toLowerCase(Locale.ROOT);
-        return phones.toList().stream()
-                .filter(phone -> phone.getBrand().toLowerCase(Locale.ROOT).contains(normalized))
-                .collect(Collectors.toList());
+        List<Phone> result = new ArrayList<>();
+        for (Phone phone : phones) {
+            if (phone.getBrand().toLowerCase(Locale.ROOT).contains(normalized)) {
+                result.add(phone);
+            }
+        }
+        return result;
     }
 
     /**
@@ -72,9 +77,13 @@ public class PhoneManager {
      * @return danh sách phù hợp.
      */
     public List<Phone> findByPriceRange(double min, double max) {
-        return phones.toList().stream()
-                .filter(phone -> phone.getPrice() >= min && phone.getPrice() <= max)
-                .collect(Collectors.toList());
+        List<Phone> result = new ArrayList<>();
+        for (Phone phone : phones) {
+            if (phone.getPrice() >= min && phone.getPrice() <= max) {
+                result.add(phone);
+            }
+        }
+        return result;
     }
 
     /**
@@ -119,28 +128,52 @@ public class PhoneManager {
      * @return điện thoại giá cao nhất (nếu có).
      */
     public Optional<Phone> findMostExpensive() {
-        return phones.toList().stream().max(Comparator.comparingDouble(Phone::getPrice));
+        Phone candidate = null;
+        for (Phone phone : phones) {
+            if (candidate == null || phone.getPrice() > candidate.getPrice()) {
+                candidate = phone;
+            }
+        }
+        return Optional.ofNullable(candidate);
     }
 
     /**
      * @return điện thoại giá thấp nhất.
      */
     public Optional<Phone> findCheapest() {
-        return phones.toList().stream().min(Comparator.comparingDouble(Phone::getPrice));
+        Phone candidate = null;
+        for (Phone phone : phones) {
+            if (candidate == null || phone.getPrice() < candidate.getPrice()) {
+                candidate = phone;
+            }
+        }
+        return Optional.ofNullable(candidate);
     }
 
     /**
      * @return điện thoại có tồn kho lớn nhất.
      */
     public Optional<Phone> findHighestStock() {
-        return phones.toList().stream().max(Comparator.comparingInt(Phone::getStock));
+        Phone candidate = null;
+        for (Phone phone : phones) {
+            if (candidate == null || phone.getStock() > candidate.getStock()) {
+                candidate = phone;
+            }
+        }
+        return Optional.ofNullable(candidate);
     }
 
     /**
      * @return điện thoại có tồn kho thấp nhất.
      */
     public Optional<Phone> findLowestStock() {
-        return phones.toList().stream().min(Comparator.comparingInt(Phone::getStock));
+        Phone candidate = null;
+        for (Phone phone : phones) {
+            if (candidate == null || phone.getStock() < candidate.getStock()) {
+                candidate = phone;
+            }
+        }
+        return Optional.ofNullable(candidate);
     }
 
     /**
@@ -149,7 +182,11 @@ public class PhoneManager {
      * @return tổng giá trị tồn kho (VND).
      */
     public double totalInventoryValue() {
-        return phones.toList().stream().mapToDouble(Phone::getInventoryValue).sum();
+        double total = 0;
+        for (Phone phone : phones) {
+            total += phone.getInventoryValue();
+        }
+        return total;
     }
 
     /**
@@ -158,7 +195,16 @@ public class PhoneManager {
      * @return giá trung bình (VND).
      */
     public double averagePrice() {
-        return phones.isEmpty() ? 0 : phones.toList().stream().mapToDouble(Phone::getPrice).average().orElse(0);
+        if (phones.isEmpty()) {
+            return 0;
+        }
+        double sum = 0;
+        int count = 0;
+        for (Phone phone : phones) {
+            sum += phone.getPrice();
+            count++;
+        }
+        return sum / count;
     }
 
     /**
@@ -168,7 +214,14 @@ public class PhoneManager {
      * @return số lượng mẫu phù hợp.
      */
     public long countPhonesByBrand(String brand) {
-        return findByBrand(brand).size();
+        String normalized = brand.toLowerCase(Locale.ROOT);
+        long count = 0;
+        for (Phone phone : phones) {
+            if (phone.getBrand().toLowerCase(Locale.ROOT).contains(normalized)) {
+                count++;
+            }
+        }
+        return count;
     }
 
     /**
@@ -177,7 +230,13 @@ public class PhoneManager {
      * @return lượng mẫu với stock > 0.
      */
     public long countPhonesInStock() {
-        return phones.toList().stream().filter(phone -> phone.getStock() > 0).count();
+        long count = 0;
+        for (Phone phone : phones) {
+            if (phone.getStock() > 0) {
+                count++;
+            }
+        }
+        return count;
     }
 
     /**
@@ -186,8 +245,11 @@ public class PhoneManager {
      * @return Map thương hiệu -> số mẫu.
      */
     public Map<String, Long> countPhonesPerBrand() {
-        return phones.toList().stream()
-                .collect(Collectors.groupingBy(Phone::getBrand, Collectors.counting()));
+        Map<String, Long> summary = new HashMap<>();
+        for (Phone phone : phones) {
+            summary.merge(phone.getBrand(), 1L, Long::sum);
+        }
+        return summary;
     }
 
     /**
@@ -196,8 +258,11 @@ public class PhoneManager {
      * @return Map dung lượng (GB) -> số mẫu.
      */
     public Map<Integer, Long> countByStorage() {
-        return phones.toList().stream()
-                .collect(Collectors.groupingBy(Phone::getStorageGb, Collectors.counting()));
+        Map<Integer, Long> summary = new HashMap<>();
+        for (Phone phone : phones) {
+            summary.merge(phone.getStorageGb(), 1L, Long::sum);
+        }
+        return summary;
     }
 
     /**

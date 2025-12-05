@@ -1,10 +1,11 @@
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Quản lý danh sách hóa đơn: CRUD, tìm kiếm, sắp xếp, thống kê doanh thu.
@@ -60,9 +61,13 @@ public class InvoiceManager {
      */
     public List<Invoice> findByCustomerName(String customerName) {
         String normalized = customerName.toLowerCase(Locale.ROOT);
-        return invoices.toList().stream()
-                .filter(invoice -> invoice.getCustomerName().toLowerCase(Locale.ROOT).contains(normalized))
-                .collect(Collectors.toList());
+        List<Invoice> result = new ArrayList<>();
+        for (Invoice invoice : invoices) {
+            if (invoice.getCustomerName().toLowerCase(Locale.ROOT).contains(normalized)) {
+                result.add(invoice);
+            }
+        }
+        return result;
     }
 
     /**
@@ -73,9 +78,14 @@ public class InvoiceManager {
      * @return danh sách kết quả.
      */
     public List<Invoice> findByDateRange(LocalDate start, LocalDate end) {
-        return invoices.toList().stream()
-                .filter(invoice -> !invoice.getSaleDate().isBefore(start) && !invoice.getSaleDate().isAfter(end))
-                .collect(Collectors.toList());
+        List<Invoice> result = new ArrayList<>();
+        for (Invoice invoice : invoices) {
+            LocalDate saleDate = invoice.getSaleDate();
+            if (!saleDate.isBefore(start) && !saleDate.isAfter(end)) {
+                result.add(invoice);
+            }
+        }
+        return result;
     }
 
     /**
@@ -85,9 +95,13 @@ public class InvoiceManager {
      * @return danh sách hóa đơn bán mẫu máy đó.
      */
     public List<Invoice> findByPhoneId(String phoneId) {
-        return invoices.toList().stream()
-                .filter(invoice -> invoice.getPhoneId().equalsIgnoreCase(phoneId))
-                .collect(Collectors.toList());
+        List<Invoice> result = new ArrayList<>();
+        for (Invoice invoice : invoices) {
+            if (invoice.getPhoneId().equalsIgnoreCase(phoneId)) {
+                result.add(invoice);
+            }
+        }
+        return result;
     }
 
     /**
@@ -132,7 +146,13 @@ public class InvoiceManager {
      * @return Optional chứa hóa đơn phù hợp.
      */
     public Optional<Invoice> findLargestOrder() {
-        return invoices.toList().stream().max(Comparator.comparingDouble(Invoice::getNetTotal));
+        Invoice candidate = null;
+        for (Invoice invoice : invoices) {
+            if (candidate == null || invoice.getNetTotal() > candidate.getNetTotal()) {
+                candidate = invoice;
+            }
+        }
+        return Optional.ofNullable(candidate);
     }
 
     /**
@@ -141,7 +161,13 @@ public class InvoiceManager {
      * @return Optional hóa đơn giá trị thấp nhất.
      */
     public Optional<Invoice> findSmallestOrder() {
-        return invoices.toList().stream().min(Comparator.comparingDouble(Invoice::getNetTotal));
+        Invoice candidate = null;
+        for (Invoice invoice : invoices) {
+            if (candidate == null || invoice.getNetTotal() < candidate.getNetTotal()) {
+                candidate = invoice;
+            }
+        }
+        return Optional.ofNullable(candidate);
     }
 
     /**
@@ -150,7 +176,13 @@ public class InvoiceManager {
      * @return Optional kết quả tương ứng.
      */
     public Optional<Invoice> findHighestQuantity() {
-        return invoices.toList().stream().max(Comparator.comparingInt(Invoice::getQuantity));
+        Invoice candidate = null;
+        for (Invoice invoice : invoices) {
+            if (candidate == null || invoice.getQuantity() > candidate.getQuantity()) {
+                candidate = invoice;
+            }
+        }
+        return Optional.ofNullable(candidate);
     }
 
     /**
@@ -159,7 +191,13 @@ public class InvoiceManager {
      * @return Optional kết quả tương ứng.
      */
     public Optional<Invoice> findLowestQuantity() {
-        return invoices.toList().stream().min(Comparator.comparingInt(Invoice::getQuantity));
+        Invoice candidate = null;
+        for (Invoice invoice : invoices) {
+            if (candidate == null || invoice.getQuantity() < candidate.getQuantity()) {
+                candidate = invoice;
+            }
+        }
+        return Optional.ofNullable(candidate);
     }
 
     /** Thống kê tổng hợp */
@@ -169,7 +207,11 @@ public class InvoiceManager {
      * @return tổng tiền thực thu.
      */
     public double totalRevenue() {
-        return invoices.toList().stream().mapToDouble(Invoice::getNetTotal).sum();
+        double total = 0;
+        for (Invoice invoice : invoices) {
+            total += invoice.getNetTotal();
+        }
+        return total;
     }
 
     /**
@@ -178,7 +220,16 @@ public class InvoiceManager {
      * @return doanh thu trung bình.
      */
     public double averageInvoiceValue() {
-        return invoices.isEmpty() ? 0 : invoices.toList().stream().mapToDouble(Invoice::getNetTotal).average().orElse(0);
+        if (invoices.isEmpty()) {
+            return 0;
+        }
+        double sum = 0;
+        int count = 0;
+        for (Invoice invoice : invoices) {
+            sum += invoice.getNetTotal();
+            count++;
+        }
+        return sum / count;
     }
 
     /**
@@ -187,7 +238,11 @@ public class InvoiceManager {
      * @return tổng quantity.
      */
     public int totalQuantitySold() {
-        return invoices.toList().stream().mapToInt(Invoice::getQuantity).sum();
+        int total = 0;
+        for (Invoice invoice : invoices) {
+            total += invoice.getQuantity();
+        }
+        return total;
     }
 
     /**
@@ -205,9 +260,11 @@ public class InvoiceManager {
      * @return số tiền giảm.
      */
     public double totalDiscountAmount() {
-        return invoices.toList().stream()
-                .mapToDouble(invoice -> invoice.getGrossTotal() - invoice.getNetTotal())
-                .sum();
+        double total = 0;
+        for (Invoice invoice : invoices) {
+            total += invoice.getGrossTotal() - invoice.getNetTotal();
+        }
+        return total;
     }
 
     /**
@@ -216,8 +273,11 @@ public class InvoiceManager {
      * @return Map nhân viên -> số hóa đơn.
      */
     public Map<String, Long> countBySalesperson() {
-        return invoices.toList().stream()
-                .collect(Collectors.groupingBy(Invoice::getSalesperson, Collectors.counting()));
+        Map<String, Long> summary = new HashMap<>();
+        for (Invoice invoice : invoices) {
+            summary.merge(invoice.getSalesperson(), 1L, Long::sum);
+        }
+        return summary;
     }
 
     /**
@@ -226,9 +286,11 @@ public class InvoiceManager {
      * @return Map nhân viên -> doanh thu.
      */
     public Map<String, Double> revenueBySalesperson() {
-        return invoices.toList().stream()
-                .collect(Collectors.groupingBy(Invoice::getSalesperson,
-                        Collectors.summingDouble(Invoice::getNetTotal)));
+        Map<String, Double> summary = new HashMap<>();
+        for (Invoice invoice : invoices) {
+            summary.merge(invoice.getSalesperson(), invoice.getNetTotal(), Double::sum);
+        }
+        return summary;
     }
 
     /**
@@ -237,9 +299,12 @@ public class InvoiceManager {
      * @return Map tháng -> doanh thu.
      */
     public Map<Integer, Double> revenueByMonth() {
-        return invoices.toList().stream()
-                .collect(Collectors.groupingBy(invoice -> invoice.getSaleDate().getMonthValue(),
-                        Collectors.summingDouble(Invoice::getNetTotal)));
+        Map<Integer, Double> summary = new HashMap<>();
+        for (Invoice invoice : invoices) {
+            int month = invoice.getSaleDate().getMonthValue();
+            summary.merge(month, invoice.getNetTotal(), Double::sum);
+        }
+        return summary;
     }
 
     /**
