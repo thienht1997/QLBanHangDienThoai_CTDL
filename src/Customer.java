@@ -12,6 +12,17 @@ public class Customer {
     private final int joinYear;
     private final double totalSpent;
 
+    /**
+     * Khởi tạo đầy đủ thông tin khách hàng.
+     *
+     * @param id        mã khách hàng (duy nhất).
+     * @param fullName  họ tên.
+     * @param phone     số điện thoại.
+     * @param email     email liên hệ.
+     * @param tier      hạng thành viên.
+     * @param joinYear  năm tham gia.
+     * @param totalSpent tổng chi tiêu tích lũy.
+     */
     public Customer(String id, String fullName, String phone, String email, String tier, int joinYear, double totalSpent) {
         this.id = id;
         this.fullName = fullName;
@@ -22,34 +33,46 @@ public class Customer {
         this.totalSpent = totalSpent;
     }
 
+    /** Mã khách hàng (khóa chính). */
     public String getId() {
         return id;
     }
 
+    /** Họ tên đầy đủ. */
     public String getFullName() {
         return fullName;
     }
 
+    /** Số điện thoại liên hệ. */
     public String getPhone() {
         return phone;
     }
 
+    /** Địa chỉ email. */
     public String getEmail() {
         return email;
     }
 
+    /** Hạng thành viên (Bronze/Silver/Gold/Platinum). */
     public String getTier() {
         return tier;
     }
 
+    /** Năm tham gia lần đầu. */
     public int getJoinYear() {
         return joinYear;
     }
 
+    /** Tổng chi tiêu tích lũy. */
     public double getTotalSpent() {
         return totalSpent;
     }
 
+    /**
+     * Xuất khách hàng thành 1 dòng CSV.
+     *
+     * @return chuỗi CSV 7 cột.
+     */
     public String toCsv() {
         return String.join(",",
                 id,
@@ -61,6 +84,12 @@ public class Customer {
                 String.valueOf(totalSpent));
     }
 
+    /**
+     * Parse 1 dòng CSV thành đối tượng Customer.
+     *
+     * @param line dòng CSV.
+     * @return Customer tương ứng.
+     */
     public static Customer fromCsv(String line) {
         String[] parts = line.split(",");
         if (parts.length < 7) {

@@ -12,6 +12,17 @@ public class Employee {
     private final int yearsExperience;
     private final double monthlySales;
 
+    /**
+     * Khởi tạo đầy đủ thông tin nhân viên.
+     *
+     * @param id              mã nhân viên.
+     * @param fullName        họ tên.
+     * @param role            chức vụ.
+     * @param phone           số điện thoại.
+     * @param salary          lương cơ bản.
+     * @param yearsExperience số năm kinh nghiệm.
+     * @param monthlySales    doanh số trung bình tháng.
+     */
     public Employee(String id, String fullName, String role, String phone, double salary, int yearsExperience, double monthlySales) {
         this.id = id;
         this.fullName = fullName;
@@ -22,34 +33,46 @@ public class Employee {
         this.monthlySales = monthlySales;
     }
 
+    /** Mã nhân viên (khóa chính). */
     public String getId() {
         return id;
     }
 
+    /** Họ tên nhân viên. */
     public String getFullName() {
         return fullName;
     }
 
+    /** Chức vụ (Sales/Manager/...). */
     public String getRole() {
         return role;
     }
 
+    /** Số điện thoại liên hệ. */
     public String getPhone() {
         return phone;
     }
 
+    /** Lương cơ bản hàng tháng. */
     public double getSalary() {
         return salary;
     }
 
+    /** Số năm kinh nghiệm. */
     public int getYearsExperience() {
         return yearsExperience;
     }
 
+    /** Doanh số trung bình 1 tháng. */
     public double getMonthlySales() {
         return monthlySales;
     }
 
+    /**
+     * Xuất nhân viên thành 1 dòng CSV.
+     *
+     * @return chuỗi CSV 7 cột.
+     */
     public String toCsv() {
         return String.join(",",
                 id,
@@ -61,6 +84,12 @@ public class Employee {
                 String.valueOf(monthlySales));
     }
 
+    /**
+     * Parse 1 dòng CSV thành đối tượng Employee.
+     *
+     * @param line dòng CSV.
+     * @return Employee tương ứng.
+     */
     public static Employee fromCsv(String line) {
         String[] parts = line.split(",");
         if (parts.length < 7) {
