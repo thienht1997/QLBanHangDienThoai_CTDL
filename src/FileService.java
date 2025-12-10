@@ -69,6 +69,64 @@ public class FileService {
     }
 
     /**
+     * Đọc danh sách khách hàng.
+     *
+     * @param path file nguồn.
+     * @return danh sách khách hàng (có thể rỗng).
+     */
+    public List<Customer> readCustomers(Path path) throws IOException {
+        if (Files.notExists(path)) {
+            return Collections.emptyList();
+        }
+        return Files.readAllLines(path).stream()
+                .filter(line -> !line.isBlank())
+                .map(Customer::fromCsv)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Ghi danh sách khách hàng.
+     *
+     * @param path      file đích.
+     * @param customers dữ liệu cần lưu.
+     */
+    public void writeCustomers(Path path, List<Customer> customers) throws IOException {
+        ensureParent(path);
+        Files.write(path, customers.stream()
+                .map(Customer::toCsv)
+                .collect(Collectors.toList()));
+    }
+
+    /**
+     * Đọc danh sách nhân viên.
+     *
+     * @param path file nguồn.
+     * @return danh sách nhân viên (có thể rỗng).
+     */
+    public List<Employee> readEmployees(Path path) throws IOException {
+        if (Files.notExists(path)) {
+            return Collections.emptyList();
+        }
+        return Files.readAllLines(path).stream()
+                .filter(line -> !line.isBlank())
+                .map(Employee::fromCsv)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Ghi danh sách nhân viên.
+     *
+     * @param path      file đích.
+     * @param employees dữ liệu cần lưu.
+     */
+    public void writeEmployees(Path path, List<Employee> employees) throws IOException {
+        ensureParent(path);
+        Files.write(path, employees.stream()
+                .map(Employee::toCsv)
+                .collect(Collectors.toList()));
+    }
+
+    /**
      * Đảm bảo thư mục đích tồn tại trước khi ghi.
      *
      * @param path file chuẩn bị ghi.

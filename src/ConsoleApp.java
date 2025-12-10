@@ -13,10 +13,14 @@ public class ConsoleApp {
     private final Scanner scanner = new Scanner(System.in);
     private final PhoneManager phoneManager = new PhoneManager();
     private final InvoiceManager invoiceManager = new InvoiceManager();
+    private final CustomerManager customerManager = new CustomerManager();
+    private final EmployeeManager employeeManager = new EmployeeManager();
     private final AnalyticsService analyticsService = new AnalyticsService(phoneManager, invoiceManager);
     private final FileService fileService = new FileService();
     private final Path phoneFile = Path.of("data", "phones.csv");
     private final Path invoiceFile = Path.of("data", "invoices.csv");
+    private final Path customerFile = Path.of("data", "customers.csv");
+    private final Path employeeFile = Path.of("data", "employees.csv");
 
     /**
      * Hàm khởi động chính: đọc dữ liệu, seed nếu trống và mở menu.
@@ -29,6 +33,12 @@ public class ConsoleApp {
         if (invoiceManager.getAll().isEmpty()) {
             seedInvoices();
         }
+        if (customerManager.getAll().isEmpty()) {
+            seedCustomers();
+        }
+        if (employeeManager.getAll().isEmpty()) {
+            seedEmployees();
+        }
         mainMenuLoop();
     }
 
@@ -39,6 +49,8 @@ public class ConsoleApp {
         try {
             phoneManager.replaceAll(fileService.readPhones(phoneFile));
             invoiceManager.replaceAll(fileService.readInvoices(invoiceFile));
+            customerManager.replaceAll(fileService.readCustomers(customerFile));
+            employeeManager.replaceAll(fileService.readEmployees(employeeFile));
         } catch (IOException e) {
             System.out.println("Khong the doc file du lieu: " + e.getMessage());
         }
@@ -51,6 +63,8 @@ public class ConsoleApp {
         try {
             fileService.writePhones(phoneFile, phoneManager.getAll());
             fileService.writeInvoices(invoiceFile, invoiceManager.getAll());
+            fileService.writeCustomers(customerFile, customerManager.getAll());
+            fileService.writeEmployees(employeeFile, employeeManager.getAll());
             System.out.println("Da luu du lieu vao thu muc data.");
         } catch (IOException e) {
             System.out.println("Khong the ghi file: " + e.getMessage());
@@ -65,22 +79,26 @@ public class ConsoleApp {
             System.out.println("\n===== QUAN LY BAN DIEN THOAI =====");
             System.out.println("1. Quan ly Dien Thoai");
             System.out.println("2. Quan ly Hoa Don");
-            System.out.println("3. Bao cao & Thong ke");
-            System.out.println("4. Doc du lieu tu file");
-            System.out.println("5. Ghi du lieu ra file");
-            System.out.println("6. Chay demo tu dong cac chuc nang");
+            System.out.println("3. Quan ly Khach Hang");
+            System.out.println("4. Quan ly Nhan Vien");
+            System.out.println("5. Bao cao & Thong ke");
+            System.out.println("6. Doc du lieu tu file");
+            System.out.println("7. Ghi du lieu ra file");
+            System.out.println("8. Chay demo tu dong cac chuc nang");
             System.out.println("0. Thoat");
             int choice = readInt("Chon: ");
             switch (choice) {
                 case 1 -> phoneMenu();
                 case 2 -> invoiceMenu();
-                case 3 -> reportMenu();
-                case 4 -> {
+                case 3 -> customerMenu();
+                case 4 -> employeeMenu();
+                case 5 -> reportMenu();
+                case 6 -> {
                     loadFromFiles();
                     System.out.println("Da doc lai du lieu tu file.");
                 }
-                case 5 -> saveToFiles();
-                case 6 -> autoDemo();
+                case 7 -> saveToFiles();
+                case 8 -> autoDemo();
                 case 0 -> {
                     System.out.println("Tam biet!");
                     return;
@@ -196,6 +214,100 @@ public class ConsoleApp {
     }
 
     /**
+     * Menu quản lý khách hàng.
+     */
+    private void customerMenu() {
+        while (true) {
+            System.out.println("\n--- Quan ly Khach Hang ---");
+            System.out.println("1. In danh sach");
+            System.out.println("2. Them moi");
+            System.out.println("3. Cap nhat");
+            System.out.println("4. Xoa");
+            System.out.println("5. Tim theo ten (tu khoa)");
+            System.out.println("6. Tim theo hang thanh vien");
+            System.out.println("7. Sap xep ten A-Z");
+            System.out.println("8. Sap xep ten Z-A");
+            System.out.println("9. Sap xep tong chi tieu giam dan");
+            System.out.println("10. Sap xep theo nam tham gia tang");
+            System.out.println("11. Tim lon/ nho nhat (chi tieu, nam)");
+            System.out.println("12. Tong/Trung binh/ Dem/ Thong ke");
+            System.out.println("0. Quay lai");
+            int choice = readInt("Chon: ");
+            switch (choice) {
+                case 1 -> printCustomers(customerManager.getAll());
+                case 2 -> customerManager.addCustomer(inputCustomer());
+                case 3 -> updateCustomer();
+                case 4 -> deleteCustomer();
+                case 5 -> {
+                    String keyword = readLine("Nhap tu khoa ten: ");
+                    printCustomers(customerManager.findByNameKeyword(keyword));
+                }
+                case 6 -> {
+                    String tier = readLine("Nhap hang thanh vien: ");
+                    printCustomers(customerManager.findByTier(tier));
+                }
+                case 7 -> printCustomers(customerManager.sortByNameAsc());
+                case 8 -> printCustomers(customerManager.sortByNameDesc());
+                case 9 -> printCustomers(customerManager.sortByTotalSpentDesc());
+                case 10 -> printCustomers(customerManager.sortByJoinYearAsc());
+                case 11 -> showCustomerExtremes();
+                case 12 -> showCustomerAggregations();
+                case 0 -> {
+                    return;
+                }
+                default -> System.out.println("Lua chon khong hop le.");
+            }
+        }
+    }
+
+    /**
+     * Menu quản lý nhân viên.
+     */
+    private void employeeMenu() {
+        while (true) {
+            System.out.println("\n--- Quan ly Nhan Vien ---");
+            System.out.println("1. In danh sach");
+            System.out.println("2. Them moi");
+            System.out.println("3. Cap nhat");
+            System.out.println("4. Xoa");
+            System.out.println("5. Tim theo chuc vu");
+            System.out.println("6. Tim theo ten (tu khoa)");
+            System.out.println("7. Sap xep luong giam dan");
+            System.out.println("8. Sap xep luong tang dan");
+            System.out.println("9. Sap xep kinh nghiem giam dan");
+            System.out.println("10. Sap xep doanh so giam dan");
+            System.out.println("11. Tim lon/ nho nhat (luong, kinh nghiem, doanh so)");
+            System.out.println("12. Tong/Trung binh/ Dem/ Thong ke");
+            System.out.println("0. Quay lai");
+            int choice = readInt("Chon: ");
+            switch (choice) {
+                case 1 -> printEmployees(employeeManager.getAll());
+                case 2 -> employeeManager.addEmployee(inputEmployee());
+                case 3 -> updateEmployee();
+                case 4 -> deleteEmployee();
+                case 5 -> {
+                    String role = readLine("Nhap chuc vu: ");
+                    printEmployees(employeeManager.findByRole(role));
+                }
+                case 6 -> {
+                    String keyword = readLine("Nhap tu khoa ten: ");
+                    printEmployees(employeeManager.findByNameKeyword(keyword));
+                }
+                case 7 -> printEmployees(employeeManager.sortBySalaryDesc());
+                case 8 -> printEmployees(employeeManager.sortBySalaryAsc());
+                case 9 -> printEmployees(employeeManager.sortByExperienceDesc());
+                case 10 -> printEmployees(employeeManager.sortBySalesDesc());
+                case 11 -> showEmployeeExtremes();
+                case 12 -> showEmployeeAggregations();
+                case 0 -> {
+                    return;
+                }
+                default -> System.out.println("Lua chon khong hop le.");
+            }
+        }
+    }
+
+    /**
      * Menu báo cáo thống kê nâng cao.
      * Cho phép lọc/nhóm các chỉ số doanh thu theo từng điều kiện.
      */
@@ -251,13 +363,19 @@ public class ConsoleApp {
      */
     private void autoDemo() {
         System.out.println("\n--- Bat dau demo tu dong ---");
-        System.out.println("1) In danh sach dien thoai va hoa don");
+        System.out.println("1) In danh sach dien thoai, hoa don, khach hang, nhan vien");
         printPhones(phoneManager.getAll());
         printInvoices(invoiceManager.getAll());
+        printCustomers(customerManager.getAll());
+        printEmployees(employeeManager.getAll());
 
         System.out.println("2) Tim kiem theo thuong hieu va khoang gia");
         printPhones(phoneManager.findByBrand("Apple"));
         printPhones(phoneManager.findByPriceRange(10000000, 20000000));
+        System.out.println("Tim khach hang hang Gold:");
+        printCustomers(customerManager.findByTier("Gold"));
+        System.out.println("Tim nhan vien theo chuc vu 'Sales':");
+        printEmployees(employeeManager.findByRole("Sales"));
 
         System.out.println("3) Sap xep dien thoai va hoa don");
         printPhones(phoneManager.sortByPriceAsc());
@@ -268,14 +386,20 @@ public class ConsoleApp {
         printInvoices(invoiceManager.sortByDateDesc());
         printInvoices(invoiceManager.sortByNetTotalDesc());
         printInvoices(invoiceManager.sortByQuantityDesc());
+        printCustomers(customerManager.sortByTotalSpentDesc());
+        printEmployees(employeeManager.sortBySalaryDesc());
 
         System.out.println("4) Tim gia tri lon/ nho nhat");
         showPhoneExtremes();
         showInvoiceExtremes();
+        showCustomerExtremes();
+        showEmployeeExtremes();
 
         System.out.println("5) Thong ke tong/ trung binh/ dem");
         showPhoneAggregations();
         showInvoiceAggregations();
+        showCustomerAggregations();
+        showEmployeeAggregations();
 
         System.out.println("6) Bao cao dieu kien");
         printDoubleMap("Doanh thu theo thuong hieu", analyticsService.revenueByBrand());
@@ -334,6 +458,38 @@ public class ConsoleApp {
         System.out.println("Tong so luong ban: " + invoiceManager.totalQuantitySold());
         System.out.println("Tong so hoa don: " + invoiceManager.countInvoices());
         System.out.printf("Tong tien giam gia: %.0f%n", invoiceManager.totalDiscountAmount());
+    }
+
+    private void showCustomerExtremes() {
+        customerManager.findHighestSpent().ifPresent(c -> System.out.println("Chi tieu cao nhat: " + c));
+        customerManager.findLowestSpent().ifPresent(c -> System.out.println("Chi tieu thap nhat: " + c));
+        customerManager.findEarliestJoin().ifPresent(c -> System.out.println("Tham gia som nhat: " + c));
+        customerManager.findLatestJoin().ifPresent(c -> System.out.println("Tham gia gan nhat: " + c));
+    }
+
+    private void showCustomerAggregations() {
+        System.out.printf("Tong chi tieu: %.0f%n", customerManager.totalSpent());
+        System.out.printf("Chi tieu trung binh: %.0f%n", customerManager.averageSpent());
+        System.out.println("So khach hang: " + customerManager.countCustomers());
+        System.out.println("Thong ke theo hang thanh vien: " + customerManager.countByTier());
+        System.out.println("Thong ke theo nam tham gia: " + customerManager.countByJoinYear());
+        System.out.println("Thong ke theo domain email: " + customerManager.countByEmailDomain());
+    }
+
+    private void showEmployeeExtremes() {
+        employeeManager.findHighestSalary().ifPresent(e -> System.out.println("Luong cao nhat: " + e));
+        employeeManager.findLowestSalary().ifPresent(e -> System.out.println("Luong thap nhat: " + e));
+        employeeManager.findMostExperience().ifPresent(e -> System.out.println("Kinh nghiem nhieu nhat: " + e));
+        employeeManager.findTopSales().ifPresent(e -> System.out.println("Doanh so cao nhat: " + e));
+    }
+
+    private void showEmployeeAggregations() {
+        System.out.printf("Tong quy luong: %.0f%n", employeeManager.totalPayroll());
+        System.out.printf("Luong trung binh: %.0f%n", employeeManager.averageSalary());
+        System.out.printf("Kinh nghiem trung binh: %.1f%n", employeeManager.averageExperience());
+        System.out.printf("Tong doanh so thang: %.0f%n", employeeManager.totalMonthlySales());
+        System.out.println("So nhan vien: " + employeeManager.countEmployees());
+        System.out.println("Thong ke theo chuc vu: " + employeeManager.countByRole());
     }
 
     /**
@@ -439,6 +595,80 @@ public class ConsoleApp {
         }
     }
 
+    private Customer inputCustomer() {
+        String id = readLine("Ma KH: ");
+        String name = readLine("Ho ten: ");
+        String phone = readLine("SDT: ");
+        String email = readLine("Email: ");
+        String tier = readLine("Hang thanh vien (Bronze/Silver/Gold/Platinum): ");
+        int joinYear = readInt("Nam tham gia: ");
+        double totalSpent = readDouble("Tong chi tieu (VND): ");
+        return new Customer(id, name, phone, email, tier, joinYear, totalSpent);
+    }
+
+    private void updateCustomer() {
+        String id = readLine("Nhap ma KH: ");
+        Optional<Customer> existing = customerManager.findById(id);
+        if (existing.isEmpty()) {
+            System.out.println("Khong tim thay.");
+            return;
+        }
+        System.out.println("Thong tin: " + existing.get());
+        Customer updated = inputCustomer();
+        if (!updated.getId().equalsIgnoreCase(id)) {
+            System.out.println("Ma moi phai trung ma cu.");
+            return;
+        }
+        customerManager.updateCustomer(id, updated);
+        System.out.println("Da cap nhat.");
+    }
+
+    private void deleteCustomer() {
+        String id = readLine("Nhap ma KH: ");
+        if (customerManager.deleteCustomer(id)) {
+            System.out.println("Da xoa.");
+        } else {
+            System.out.println("Khong tim thay.");
+        }
+    }
+
+    private Employee inputEmployee() {
+        String id = readLine("Ma NV: ");
+        String name = readLine("Ho ten: ");
+        String role = readLine("Chuc vu: ");
+        String phone = readLine("SDT: ");
+        double salary = readDouble("Luong co ban: ");
+        int years = readInt("So nam kinh nghiem: ");
+        double sales = readDouble("Doanh so thang (VND): ");
+        return new Employee(id, name, role, phone, salary, years, sales);
+    }
+
+    private void updateEmployee() {
+        String id = readLine("Nhap ma NV: ");
+        Optional<Employee> existing = employeeManager.findById(id);
+        if (existing.isEmpty()) {
+            System.out.println("Khong tim thay.");
+            return;
+        }
+        System.out.println("Thong tin: " + existing.get());
+        Employee updated = inputEmployee();
+        if (!updated.getId().equalsIgnoreCase(id)) {
+            System.out.println("Ma moi phai trung ma cu.");
+            return;
+        }
+        employeeManager.updateEmployee(id, updated);
+        System.out.println("Da cap nhat.");
+    }
+
+    private void deleteEmployee() {
+        String id = readLine("Nhap ma NV: ");
+        if (employeeManager.deleteEmployee(id)) {
+            System.out.println("Da xoa.");
+        } else {
+            System.out.println("Khong tim thay.");
+        }
+    }
+
     /**
      * In bảng danh sách điện thoại ra màn hình.
      *
@@ -458,6 +688,24 @@ public class ConsoleApp {
     }
 
     /**
+     * In danh sách khách hàng.
+     *
+     * @param customers danh sách cần in.
+     */
+    private void printCustomers(List<Customer> customers) {
+        if (customers.isEmpty()) {
+            System.out.println("(Khong co du lieu)");
+            return;
+        }
+        System.out.println("Ma | Ho ten | SDT | Email | Hang | Nam | Tong chi tieu");
+        for (Customer c : customers) {
+            System.out.printf("%s | %s | %s | %s | %s | %d | %.0f%n",
+                    c.getId(), c.getFullName(), c.getPhone(), c.getEmail(),
+                    c.getTier(), c.getJoinYear(), c.getTotalSpent());
+        }
+    }
+
+    /**
      * In bảng danh sách hóa đơn ra màn hình.
      *
      * @param invoices danh sách cần in.
@@ -473,6 +721,24 @@ public class ConsoleApp {
                     invoice.getId(), invoice.getCustomerName(), invoice.getPhoneId(),
                     invoice.getQuantity(), invoice.getUnitPrice(), invoice.getDiscountRate(),
                     invoice.getSaleDate(), invoice.getSalesperson());
+        }
+    }
+
+    /**
+     * In danh sách nhân viên.
+     *
+     * @param employees danh sách cần in.
+     */
+    private void printEmployees(List<Employee> employees) {
+        if (employees.isEmpty()) {
+            System.out.println("(Khong co du lieu)");
+            return;
+        }
+        System.out.println("Ma | Ho ten | Chuc vu | SDT | Luong | KN | Doanh so thang");
+        for (Employee e : employees) {
+            System.out.printf("%s | %s | %s | %s | %.0f | %d | %.0f%n",
+                    e.getId(), e.getFullName(), e.getRole(), e.getPhone(),
+                    e.getSalary(), e.getYearsExperience(), e.getMonthlySales());
         }
     }
 
@@ -595,5 +861,21 @@ public class ConsoleApp {
                 LocalDate.of(2024, 4, 18), "Nguyen Van G"));
         invoiceManager.addInvoice(new Invoice("INV005", "Do Van H", "0909000005", "P005", 1, 13990000, 0.04,
                 LocalDate.of(2024, 5, 5), "Le Van D"));
+    }
+
+    private void seedCustomers() {
+        customerManager.addCustomer(new Customer("C001", "Nguyen Van A", "0909000001", "a@example.com", "Gold", 2021, 120_000_000));
+        customerManager.addCustomer(new Customer("C002", "Tran Thi C", "0909000002", "c@example.com", "Silver", 2022, 85_000_000));
+        customerManager.addCustomer(new Customer("C003", "Le Van E", "0909000003", "e@example.com", "Platinum", 2020, 200_000_000));
+        customerManager.addCustomer(new Customer("C004", "Pham Thi F", "0909000004", "f@example.com", "Bronze", 2023, 35_000_000));
+        customerManager.addCustomer(new Customer("C005", "Do Van H", "0909000005", "h@example.com", "Gold", 2022, 95_000_000));
+    }
+
+    private void seedEmployees() {
+        employeeManager.addEmployee(new Employee("E001", "Tran Thi B", "Sales", "0911000001", 15_000_000, 5, 320_000_000));
+        employeeManager.addEmployee(new Employee("E002", "Le Van D", "Sales", "0911000002", 16_000_000, 6, 410_000_000));
+        employeeManager.addEmployee(new Employee("E003", "Nguyen Van G", "Sales", "0911000003", 14_000_000, 4, 280_000_000));
+        employeeManager.addEmployee(new Employee("E004", "Hoang Thi I", "Cashier", "0911000004", 12_000_000, 3, 150_000_000));
+        employeeManager.addEmployee(new Employee("E005", "Pham Van K", "Manager", "0911000005", 25_000_000, 10, 500_000_000));
     }
 }
