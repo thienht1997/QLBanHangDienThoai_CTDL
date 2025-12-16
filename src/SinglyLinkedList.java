@@ -221,6 +221,34 @@ public class SinglyLinkedList<T> implements Iterable<T> {
     }
 
     /**
+     * Xoá và trả về phần tử đầu tiên thỏa mãn điều kiện.
+     *
+     * @param predicate điều kiện xoá.
+     * @return phần tử bị xoá hoặc null nếu không có.
+     */
+    public T removeFirstAndReturn(Predicate<T> predicate) {
+        Node<T> prev = null;
+        Node<T> cur = head;
+        while (cur != null) {
+            if (predicate.test(cur.data)) {
+                if (prev == null) {
+                    head = cur.next;
+                } else {
+                    prev.next = cur.next;
+                }
+                if (cur == tail) {
+                    tail = prev;
+                }
+                size--;
+                return cur.data;
+            }
+            prev = cur;
+            cur = cur.next;
+        }
+        return null;
+    }
+
+    /**
      * Lấy số lượng phần tử hiện có.
      *
      * @return số phần tử trong danh sách.

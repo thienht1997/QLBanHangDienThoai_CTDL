@@ -12,6 +12,10 @@ import java.util.Optional;
  */
 public class InvoiceManager {
     private final SinglyLinkedList<Invoice> invoices = new SinglyLinkedList<>();
+    // Ngăn xếp lưu các hóa đơn đã xóa để có thể hoàn tác
+    private final SimpleStack<Invoice> deletedInvoices = new SimpleStack<>();
+    // Hàng đợi hóa đơn cần in/xử lý
+    private final SimpleQueue<Invoice> pendingPrint = new SimpleQueue<>();
 
     /**
      * Thêm hóa đơn mới.
@@ -20,6 +24,7 @@ public class InvoiceManager {
      */
     public void addInvoice(Invoice invoice) {
         invoices.appendRaw(invoice);
+        pendingPrint.enqueue(invoice);
     }
 
     /**
@@ -40,7 +45,12 @@ public class InvoiceManager {
      * @return true nếu xoá thành công.
      */
     public boolean deleteInvoice(String id) {
-        return invoices.removeFirst(inv -> inv.getId().equalsIgnoreCase(id));
+        Invoice removed = invoices.removeFirstAndReturn(inv -> inv.getId().equalsIgnoreCase(id));
+        if (removed != null) {
+            deletedInvoices.push(removed);
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -56,6 +66,33 @@ public class InvoiceManager {
             }
         }
         return Optional.empty();
+    }
+
+    /**
+     * Hoàn tác lần xóa hóa đơn gần nhất.
+     *
+     * @return true nếu khôi phục được.
+     */
+    public boolean undoLastDelete() {
+        Invoice last = deletedInvoices.pop();
+        if (last == null) {
+            return false;
+        }
+        invoices.appendRaw(last);
+        return true;
+    }
+
+    /**
+     * Lấy hóa đơn tiếp theo cần in/xử lý (FIFO).
+     *
+     * @return Optional hóa đơn.
+     */
+    public Optional<Invoice> pollNextForPrint() {
+        Invoice next = pendingPrint.dequeue();
+        if (next == null) {
+            return Optional.empty();
+        }
+        return Optional.of(next);
     }
 
     /**
