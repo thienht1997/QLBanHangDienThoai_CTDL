@@ -19,7 +19,7 @@ public class InvoiceManager {
      * @param invoice dữ liệu cần thêm.
      */
     public void addInvoice(Invoice invoice) {
-        invoices.addLast(invoice);
+        invoices.appendRaw(invoice);
     }
 
     /**
@@ -30,7 +30,7 @@ public class InvoiceManager {
      * @return true nếu cập nhật thành công.
      */
     public boolean updateInvoice(String id, Invoice updated) {
-        return invoices.update(invoice -> invoice.getId().equalsIgnoreCase(id), invoice -> updated);
+        return invoices.replaceFirst(inv -> inv.getId().equalsIgnoreCase(id), updated);
     }
 
     /**
@@ -40,7 +40,7 @@ public class InvoiceManager {
      * @return true nếu xoá thành công.
      */
     public boolean deleteInvoice(String id) {
-        return invoices.removeIf(invoice -> invoice.getId().equalsIgnoreCase(id));
+        return invoices.removeFirst(inv -> inv.getId().equalsIgnoreCase(id));
     }
 
     /**
@@ -50,7 +50,12 @@ public class InvoiceManager {
      * @return Optional chứa hóa đơn phù hợp.
      */
     public Optional<Invoice> findById(String id) {
-        return invoices.findFirst(invoice -> invoice.getId().equalsIgnoreCase(id));
+        for (Invoice invoice : invoices) {
+            if (invoice.getId().equalsIgnoreCase(id)) {
+                return Optional.of(invoice);
+            }
+        }
+        return Optional.empty();
     }
 
     /**

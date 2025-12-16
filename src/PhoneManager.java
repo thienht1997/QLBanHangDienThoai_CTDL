@@ -18,7 +18,7 @@ public class PhoneManager {
      * @param phone đối tượng cần lưu.
      */
     public void addPhone(Phone phone) {
-        phones.addLast(phone);
+        phones.appendRaw(phone);
     }
 
     /**
@@ -29,7 +29,7 @@ public class PhoneManager {
      * @return true nếu tìm được và đã sửa.
      */
     public boolean updatePhone(String id, Phone updated) {
-        return phones.update(phone -> phone.getId().equalsIgnoreCase(id), phone -> updated);
+        return phones.replaceFirst(p -> p.getId().equalsIgnoreCase(id), updated);
     }
 
     /**
@@ -39,7 +39,7 @@ public class PhoneManager {
      * @return true nếu xoá thành công.
      */
     public boolean deletePhone(String id) {
-        return phones.removeIf(phone -> phone.getId().equalsIgnoreCase(id));
+        return phones.removeFirst(phone -> phone.getId().equalsIgnoreCase(id));
     }
 
     /**
@@ -49,7 +49,12 @@ public class PhoneManager {
      * @return Optional điện thoại tương ứng.
      */
     public Optional<Phone> findById(String id) {
-        return phones.findFirst(phone -> phone.getId().equalsIgnoreCase(id));
+        for (Phone phone : phones) {
+            if (phone.getId().equalsIgnoreCase(id)) {
+                return Optional.of(phone);
+            }
+        }
+        return Optional.empty();
     }
 
     /**

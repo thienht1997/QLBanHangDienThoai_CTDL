@@ -153,6 +153,74 @@ public class SinglyLinkedList<T> implements Iterable<T> {
     }
 
     /**
+     * Thêm phần tử mới vào cuối danh sách.
+     *
+     * @param data phần tử cần thêm.
+     */
+    public void appendRaw(T data) {
+        Node<T> node = new Node<>(data);
+        if (head == null) {
+            head = node;
+            tail = node;
+        } else {
+            Node<T> cur = head;
+            while (cur.next != null) {
+                cur = cur.next;
+            }
+            cur.next = node;
+            tail = node;
+        }
+        size++;
+    }
+
+    /**
+     * Thay thế phần tử đầu tiên thỏa mãn điều kiện bằng giá trị mới.
+     *
+     * @param predicate điều kiện.
+     * @param newValue  giá trị mới.
+     * @return true nếu có thay thế.
+     */
+    public boolean replaceFirst(Predicate<T> predicate, T newValue) {
+        Node<T> cur = head;
+        while (cur != null) {
+            if (predicate.test(cur.data)) {
+                cur.data = newValue;
+                return true;
+            }
+            cur = cur.next;
+        }
+        return false;
+    }
+
+    /**
+     * Xoá phần tử đầu tiên thỏa mãn điều kiện.
+     *
+     * @param predicate điều kiện xoá.
+     * @return true nếu xoá thành công.
+     */
+    public boolean removeFirst(Predicate<T> predicate) {
+        Node<T> prev = null;
+        Node<T> cur = head;
+        while (cur != null) {
+            if (predicate.test(cur.data)) {
+                if (prev == null) {
+                    head = cur.next;
+                } else {
+                    prev.next = cur.next;
+                }
+                if (cur == tail) {
+                    tail = prev;
+                }
+                size--;
+                return true;
+            }
+            prev = cur;
+            cur = cur.next;
+        }
+        return false;
+    }
+
+    /**
      * Lấy số lượng phần tử hiện có.
      *
      * @return số phần tử trong danh sách.

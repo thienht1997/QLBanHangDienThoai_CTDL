@@ -18,7 +18,7 @@ public class EmployeeManager {
      * @param employee nhân viên cần thêm.
      */
     public void addEmployee(Employee employee) {
-        employees.addLast(employee);
+        employees.appendRaw(employee);
     }
 
     /**
@@ -29,7 +29,7 @@ public class EmployeeManager {
      * @return true nếu cập nhật thành công.
      */
     public boolean updateEmployee(String id, Employee updated) {
-        return employees.update(e -> e.getId().equalsIgnoreCase(id), e -> updated);
+        return employees.replaceFirst(e -> e.getId().equalsIgnoreCase(id), updated);
     }
 
     /**
@@ -39,7 +39,7 @@ public class EmployeeManager {
      * @return true nếu xoá thành công.
      */
     public boolean deleteEmployee(String id) {
-        return employees.removeIf(e -> e.getId().equalsIgnoreCase(id));
+        return employees.removeFirst(e -> e.getId().equalsIgnoreCase(id));
     }
 
     /**
@@ -49,7 +49,12 @@ public class EmployeeManager {
      * @return Optional<Employee>.
      */
     public Optional<Employee> findById(String id) {
-        return employees.findFirst(e -> e.getId().equalsIgnoreCase(id));
+        for (Employee e : employees) {
+            if (e.getId().equalsIgnoreCase(id)) {
+                return Optional.of(e);
+            }
+        }
+        return Optional.empty();
     }
 
     /**

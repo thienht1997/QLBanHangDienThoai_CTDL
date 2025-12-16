@@ -18,7 +18,7 @@ public class CustomerManager {
      * @param customer khách hàng cần thêm.
      */
     public void addCustomer(Customer customer) {
-        customers.addLast(customer);
+        customers.appendRaw(customer);
     }
 
     /**
@@ -29,7 +29,7 @@ public class CustomerManager {
      * @return true nếu có cập nhật.
      */
     public boolean updateCustomer(String id, Customer updated) {
-        return customers.update(c -> c.getId().equalsIgnoreCase(id), c -> updated);
+        return customers.replaceFirst(c -> c.getId().equalsIgnoreCase(id), updated);
     }
 
     /**
@@ -39,7 +39,7 @@ public class CustomerManager {
      * @return true nếu xoá thành công.
      */
     public boolean deleteCustomer(String id) {
-        return customers.removeIf(c -> c.getId().equalsIgnoreCase(id));
+        return customers.removeFirst(c -> c.getId().equalsIgnoreCase(id));
     }
 
     /**
@@ -49,7 +49,12 @@ public class CustomerManager {
      * @return Optional<Customer>.
      */
     public Optional<Customer> findById(String id) {
-        return customers.findFirst(c -> c.getId().equalsIgnoreCase(id));
+        for (Customer c : customers) {
+            if (c.getId().equalsIgnoreCase(id)) {
+                return Optional.of(c);
+            }
+        }
+        return Optional.empty();
     }
 
     /**
