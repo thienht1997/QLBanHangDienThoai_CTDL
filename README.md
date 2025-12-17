@@ -35,11 +35,14 @@ data/
 - **Chương trình chính gọi lần lượt các chức năng**: mục 6 của menu chính chạy demo tự động.
 - Menu tiếng Việt thân thiện, dễ sử dụng.
 
-## 3. Hướng dẫn chạy
+## 3. Hướng dẫn chạy (Windows & macOS)
 
-```bash
-cd path/to/your/project
-javac -cp src -d out $(find src -name "*.java")
+- Yêu cầu: JDK 17+ đã được thêm vào `PATH`.
+- Bảo đảm thư mục `out/` tồn tại (hoặc để `javac` tự tạo).
+
+```powershell
+cd C:\path\to\QLBanHangDienThoai_CTDL
+javac -d out src\*.java
 java -cp out Main
 ```
 
